@@ -1,5 +1,9 @@
 <script lang="ts">
     import { fade, crossfade } from "svelte/transition";
+    import AuthModal from "$lib/components/AuthModal.svelte";
+
+    let showAuthModal: boolean = $state(false)
+    let authMode: 'login' | 'signup' = $state('login')
 
     let scrollY: number = $state(typeof window !== 'undefined' ? window.scrollY : 0);
 
@@ -23,6 +27,7 @@
         name: string;
         iconUrl : string;
         splashUrl: string;
+        route: string;
     }
 
     const categories: Category[] = [
@@ -30,19 +35,22 @@
             id: 0,
             name: 'Resume',
             iconUrl: 'https://cdn-icons-png.flaticon.com/512/5404/5404040.png',
-            splashUrl: 'https://gratisography.com/wp-content/uploads/2018/05/gratisography-442H-5000-free-stock-photo.jpg'
+            splashUrl: 'https://gratisography.com/wp-content/uploads/2018/05/gratisography-442H-5000-free-stock-photo.jpg',
+            route: "/resume"
         },
         {
             id: 1,
             name: 'Dungeons & Dragons',
             iconUrl: 'https://www.pngmart.com/files/23/Dungeons-And-Dragons-Logo-PNG-Image.png',
-            splashUrl: 'https://i.redd.it/27i6xhyyrnwe1.jpeg'
+            splashUrl: 'https://i.redd.it/27i6xhyyrnwe1.jpeg',
+            route: "/dnd"
         },
         { 
             id: 2,
             name: 'ArmA 3',
             iconUrl: 'https://pngimg.com/d/arma_PNG56.png',
-            splashUrl: 'https://images5.alphacoders.com/746/746133.jpg'
+            splashUrl: 'https://images5.alphacoders.com/746/746133.jpg',
+            route: "/arma"
         },
     ];
 
@@ -62,8 +70,11 @@
 <svelte:window on:scroll={handleScroll}/>
 
 <div class="relative min-h-[160vh] bg-white text-gray-900 font-inter">
+    <button onclick={() => (showAuthModal = true)}>
+        CLICK ME
+    </button>
     <!--
-        PARALLAX HEADER
+        PARALLAX TITLE
     -->
     <div 
         class="fixed inset-0 flex items-center justify-center 
@@ -91,7 +102,7 @@
             style:background-image={`url(${url})`}
             style:background-size="cover"
             style:background-position="center"
-            style:filter="grayscale(30%)"
+            style:filter="grayscale(20%)"
             style:opacity="0.4"
             in:receive={{ key: url }}
             out:send={{ key: url }}
@@ -135,24 +146,25 @@
                 <div class="flex gap-8 justify-between max-w-6xl w-full flex-wrap">
                     {#each categories as category (category.name)}
                         {@const isHovered = hoveredCategory === category.id}
-                        
-                        <div 
-                            class="flex flex-col items-center transition-transform duration-300 transform cursor-pointer"
-                            onmouseenter={(e) => handleCategoryHover(e, category)}
-                            onmouseleave={(e) => handleCategoryHover(e, null)}
-                            role="button"
-                            tabindex = 0
-                        >
-                            <img 
-                                src={category.iconUrl} 
-                                alt={category.name} 
-                                class="w-48 h-48 object-contain rounded-xl transition-all duration-300
-                                    {isHovered 
-                                        ? 'scale-125 z-20' // If hovered: grow large, lift z-index
-                                        : (hoveredCategory ? 'scale-90' : 'scale-100') // If NOT hovered, but something IS hovered: shrink slightly
-                                    }"
-                            />
-                        </div>
+                        <a href={category.route} class="block">
+                            <div 
+                                class="flex flex-col items-center transition-transform duration-300 transform cursor-pointer"
+                                onmouseenter={(e) => handleCategoryHover(e, category)}
+                                onmouseleave={(e) => handleCategoryHover(e, null)}
+                                role="button"
+                                tabindex=0
+                            >
+                                <img 
+                                    src={category.iconUrl} 
+                                    alt={category.name} 
+                                    class="w-48 h-48 object-contain rounded-xl transition-all duration-300
+                                        {isHovered 
+                                            ? 'scale-125 z-20' // If hovered: grow large, lift z-index
+                                            : (hoveredCategory ? 'scale-90' : 'scale-100') // If NOT hovered, but something IS hovered: shrink slightly
+                                        }"
+                                />
+                            </div>
+                        </a>
                     {/each}
                 </div>
             </div>
@@ -160,13 +172,9 @@
     </main>
 </div>
 
+<AuthModal bind:open={showAuthModal} bind:mode={authMode}/>
+
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Grenze');
-
-    .font-grenze {
-        font-family: 'Grenze', serif;
-    }
-
     @keyframes fadeIn {
         from {
             opacity: 0;
